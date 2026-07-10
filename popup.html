@@ -2,25 +2,60 @@
 <html>
 <head>
   <style>
-    body { width: 250px; font-family: 'Segoe UI', Arial, sans-serif; background: #fafafa; padding: 15px; margin: 0; }
-    .header { display: flex; align-items: center; gap: 8px; color: #2e7d32; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-    .stats-card { background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 15px; margin-top: 12px; }
-    .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: #555; }
-    .stat-value { font-weight: bold; color: #333; }
-    .savings { font-size: 18px; color: #2e7d32; font-weight: bold; text-align: center; margin-top: 10px; border-top: 1px dashed #ddd; padding-top: 10px; }
+    body { width: 320px; font-family: 'Segoe UI', Arial, sans-serif; background: #f7f9fc; padding: 14px; margin: 0; color: #233; }
+    .header { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: #2e7d32; border-bottom: 1px solid #e6e9ef; padding-bottom: 10px; }
+    .badge { background: #e8f5e9; color: #2e7d32; font-size: 11px; padding: 3px 7px; border-radius: 999px; font-weight: bold; }
+    .card { background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 12px; margin-top: 10px; }
+    .section-title { font-size: 12px; font-weight: bold; color: #52606d; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
+    .stat-row { display: flex; justify-content: space-between; margin-bottom: 7px; font-size: 13px; color: #555; }
+    .stat-value { font-weight: bold; color: #233; }
+    .savings { font-size: 16px; color: #2e7d32; font-weight: bold; text-align: center; margin-top: 8px; border-top: 1px dashed #ddd; padding-top: 8px; }
+    .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; }
+    .toggle-row input { accent-color: #2e7d32; }
+    .small { font-size: 12px; color: #6b7280; margin-top: 6px; }
+    .activity-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+    .activity-item { background: #f8fafc; border-radius: 6px; padding: 7px; font-size: 12px; color: #475569; }
+    .onboarding { border: 1px solid #d8f0de; background: #f4fff6; }
+    .btn { border: none; background: #2e7d32; color: white; border-radius: 6px; cursor: pointer; padding: 7px 10px; font-size: 12px; font-weight: bold; }
+    .btn.secondary { background: #e5e7eb; color: #374151; }
   </style>
 </head>
 <body>
   <div class="header">
-    <span style="font-size: 20px;">🛡️</span>
-    <h3 style="margin: 0; font-size: 16px;">MindfulWallet Panel</h3>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span style="font-size: 20px;">🛡️</span>
+      <h3 style="margin: 0; font-size: 16px;">MindfulWallet</h3>
+    </div>
+    <div class="badge">Beta</div>
   </div>
-  <div class="stats-card">
+
+  <div id="onboardingCard" class="card onboarding" style="display:none;">
+    <div class="section-title">Welcome</div>
+    <p style="margin: 0 0 8px; font-size: 13px;">MindfulWallet helps you pause before risky purchases, scams, or pressure-driven decisions.</p>
+    <button id="dismissOnboarding" class="btn">Got it</button>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Protection overview</div>
     <div class="stat-row"><span>Gambling Sites Blocked:</span><span class="stat-value" id="statGambling">0</span></div>
     <div class="stat-row"><span>Scams Intercepted:</span><span class="stat-value" id="statScams">0</span></div>
     <div class="stat-row"><span>Impulse Locks Active:</span><span class="stat-value" id="statLocks">0</span></div>
     <div class="savings">Estimated Saved: <span id="statSavings">₹0</span></div>
   </div>
+
+  <div class="card">
+    <div class="section-title">Settings</div>
+    <div class="toggle-row"><label for="toggleBlock">Block risky sites</label><input id="toggleBlock" type="checkbox" /></div>
+    <div class="toggle-row"><label for="toggleScanner">Scanner alerts</label><input id="toggleScanner" type="checkbox" /></div>
+    <div class="toggle-row"><label for="toggleTelemetry">Telemetry</label><input id="toggleTelemetry" type="checkbox" /></div>
+    <div class="small">Changes apply instantly for the current browser session.</div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Recent activity</div>
+    <ul id="activityList" class="activity-list"></ul>
+  </div>
+
   <script src="popup.js"></script>
 </body>
 </html>

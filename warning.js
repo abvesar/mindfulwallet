@@ -3,7 +3,6 @@ const urlParams = new URLSearchParams(window.location.search);
 const blockReason = urlParams.get('reason');
 const brandName = urlParams.get('brand');
 
-// If the block happened because of a fake verification window, swap the text dynamically
 if (blockReason === 'fake_auth') {
   document.querySelector('h1').innerText = '⚠️ Phishing Scam Detected!';
   document.querySelector('p').innerText = `MindfulWallet intercepted a fake security prompt pretending to be ${brandName}. Entering your password or card details here will send them directly to hackers.`;
@@ -22,12 +21,10 @@ let countdownInterval = null;
 
 function startCountdown(expirationTime) {
   clearInterval(countdownInterval);
-
   bypassBtn.disabled = true;
   bypassBtn.style.opacity = '0.5';
   bypassBtn.innerText = 'Bypass Request Locked';
   timerContainer.style.display = 'block';
-
   updateClock(expirationTime);
   countdownInterval = window.setInterval(() => updateClock(expirationTime), 1000);
 }
@@ -50,11 +47,9 @@ function updateClock(expirationTime) {
   const hours = Math.floor(timeLeft / (1000 * 60 * 60));
   const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
   const displayHours = hours.toString().padStart(2, '0');
   const displayMinutes = minutes.toString().padStart(2, '0');
   const displaySeconds = seconds.toString().padStart(2, '0');
-
   countdownClock.innerText = `${displayHours}:${displayMinutes}:${displaySeconds}`;
 }
 
@@ -76,7 +71,6 @@ chrome.storage.local.get(['lockExpiration'], (result) => {
 bypassBtn.addEventListener('click', () => {
   const twentyFourHours = 24 * 60 * 60 * 1000;
   const expirationTime = Date.now() + twentyFourHours;
-
   chrome.storage.local.set({ lockExpiration: expirationTime }, () => {
     startCountdown(expirationTime);
   });

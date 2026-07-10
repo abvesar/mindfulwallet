@@ -27,18 +27,24 @@ function normalizeText(text) {
 function runScanner() {
   if (!document.body) return;
 
-  const bodyText = normalizeText(document.body.innerText);
-  const detectedPatterns = deceptivePatterns.filter((pattern) => pattern.pattern.test(bodyText));
+  chrome.storage.local.get(["settings"], (data) => {
+    const settings = data.settings || {};
+    if (settings.scannerAlerts === false) return;
 
-  const shouldAlert =
-    detectedPatterns.length >= 2 ||
-    detectedPatterns.some((pattern) => highConfidenceTypes.has(pattern.type));
+    const bodyText = normalizeText(document.body.innerText);
+    const detectedPatterns = deceptivePatterns.filter((pattern) => pattern.pattern.test(bodyText));
 
-  if (shouldAlert) {
-    const uniquePatterns = [...new Set(detectedPatterns.map((pattern) => pattern.type))];
-    highlightTextOnPage(detectedPatterns);
-    injectSafetyBanner(uniquePatterns);
-  }
+    const shouldAlert =
+      detectedPatterns.length >= 2 ||
+      detectedPatterns.some((pattern) => highConfidenceTypes.has(pattern.type));
+
+    if (shouldAlert) {
+      const uniquePatterns = [...new Set(detectedPatterns.map((pattern) => pattern.type))];
+      highlightTextOnPage(detectedPatterns);
+      injectSafetyBanner(uniquePatterns);
+      chrome.runtime.sendMessage({ type: "scanner-alert", patterns: uniquePatterns });
+    }
+  });
 }
 
 function injectSafetyBanner(patternsFound) {
