@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MindfulWallet Shield</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      text-align: center;
+      max-width: 450px;
+      width: 100%;
+    }
+    .icon { font-size: 48px; margin-bottom: 10px; }
+    h1 { color: #2c3e50; font-size: 24px; margin-bottom: 10px; }
+    p { color: #7f8c8d; font-size: 16px; line-height: 1.5; }
+    
+    .prompt-box {
+      background: #f8f9fa;
+      border-left: 4px solid #2e7d32;
+      padding: 15px;
+      margin: 25px 0;
+      border-radius: 4px;
+      text-align: left;
+    }
+    .prompt-title { font-weight: bold; color: #2e7d32; font-size: 14px; }
+    .prompt-text { color: #333; font-style: italic; margin-top: 5px; }
+
+    .btn-safe {
+      background-color: #2e7d32;
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.2s;
+    }
+    .btn-safe:hover { background-color: #1b5e20; }
+    
+    .btn-bypass {
+      background: none;
+      border: none;
+      color: #95a5a6;
+      margin-top: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      text-decoration: underline;
+    }
+    .btn-bypass:hover { color: #7f8c8d; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="icon">🛡️</div>
+    <h1>Hold on a second!</h1>
+    <p>MindfulWallet detected that this site is flagged for risky financial practices or gambling. Your financial health is worth protecting.</p>
+    
+    <div class="prompt-box">
+      <div class="prompt-title">💡 Mindful Check:</div>
+      <div class="prompt-text">"Is this purchase/action a NEED or a WANT right now?"</div>
+    </div>
+
+    <button class="btn-safe" id="safeBtn">Take Me Somewhere Safe</button>
+    <button class="btn-bypass" id="bypassBtn">Bypass (Start 24hr Lockout)</button>
+    <div id="timerContainer" style="display: none; margin-top: 15px; color: #d32f2f; font-weight: bold; font-size: 14px;">
+      🔒 Lockout Active. Time Remaining: <span id="countdownClock">24:00:00</span>
+    </div>
+  </div>
+
+  <script src="warning.js"></script>
+</body>
+</html>
