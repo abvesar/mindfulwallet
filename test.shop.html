@@ -1,7 +1,83 @@
-<html>
-  <body>
-    <h1>Cool Sneaker Store</h1>
-    <p>Buy these shoes right now!</p>
-    <div style="font-weight: bold; color: red;">ONLY 1 LEFT IN STOCK! SELLING FAST!</div>
-  </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NovaDrop | Limited Edition Sneakers</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f7f7f7;
+      color: #222;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .hero {
+      background: linear-gradient(135deg, #111, #333);
+      color: white;
+      padding: 32px;
+      border-radius: 16px;
+    }
+    .product {
+      background: white;
+      padding: 24px;
+      margin-top: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    }
+    .price {
+      font-size: 28px;
+      font-weight: bold;
+      color: #d81b60;
+    }
+    .badge {
+      display: inline-block;
+      background: #ffecf3;
+      color: #c2185b;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    button {
+      background: #0d6efd;
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+    .urgency {
+      color: #b71c1c;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="hero">
+      <h1>NovaDrop Exclusive Sneakers</h1>
+      <p>Premium limited-release shoes for the next generation of collectors.</p>
+    </div>
+
+    <div class="product">
+      <div class="badge">Flash Drop</div>
+      <h2>AeroGlow Runner Pro</h2>
+      <div class="price">₹4,999</div>
+      <p>Lightweight, sleek, and built for comfort. Designed for fast-moving shoppers who don’t want to miss the drop.</p>
+      <div class="urgency">ONLY 2 LEFT IN STOCK! SELLING FAST!</div>
+      <div class="urgency">Offer expires in 15 minutes!</div>
+      <p>People are looking at this right now.</p>
+      <button>Add to Cart</button>
+    </div>
+  </div>
+</body>
 </html>
