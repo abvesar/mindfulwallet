@@ -113,4 +113,64 @@ if (document.readyState === "loading") {
   window.addEventListener("load", runScanner, { once: true });
 } else {
   setTimeout(runScanner, 1500);
+  // Add this inside your scanner.js file
+function blindfoldSponsoredAds() {
+  // Look for elements commonly used by social networks for ads
+  const posts = document.querySelectorAll('div, article, section');
+  
+  posts.forEach(post => {
+    const text = post.innerText.toLowerCase();
+    // If a post contains gambling keywords or is an ad, blur it!
+    if (text.includes('sponsored') && (text.includes('bet') || text.includes('casino') || text.includes('crypto win'))) {
+      post.style.filter = 'blur(10px)';
+      post.style.pointerEvents = 'none'; // Make it unclickable
+      console.log("🛡️ MindfulWallet blurred a predatory social media ad!");
+    }
+  });
+}
+
+// Run this scan every 3 seconds to catch infinite scrolling feeds
+setInterval(blindfoldSponsoredAds, 3000);
+
+// A verified registry of mega-brands that scammers frequently impersonate
+const globalBrandsRegistry = [
+  { name: "nike", officialDomain: "nike.com" },
+  { name: "adidas", officialDomain: "adidas.com" },
+  { name: "amazon", officialDomain: "amazon.com" },
+  { name: "apple", officialDomain: "apple.com" }
+];
+
+function differentiateAds() {
+  // Find all sponsored or ad elements on the social feed
+  const adsOnPage = document.querySelectorAll('div[data-testid="placement-tracking"], iframe, .sponsored-ad-card');
+
+  adsOnPage.forEach(ad => {
+    const adText = ad.innerText.toLowerCase();
+    const destinationLink = ad.querySelector('a')?.href.toLowerCase();
+
+    if (destinationLink) {
+      globalBrandsRegistry.forEach(brand => {
+        // If the ad text mentions a major brand (e.g., "Nike sale!") 
+        // but the actual hyperlink goes somewhere else entirely...
+        if (adText.includes(brand.name) && !destinationLink.includes(brand.officialDomain)) {
+          
+          // 🚨 CONFIRMED FAKE AD: Apply the red flag styling!
+          ad.style.border = "4px solid #d32f2f";
+          ad.style.backgroundColor = "#ffebee";
+          ad.style.position = "relative";
+
+          // Inject a label over the ad frame so the youth sees the trick
+          const alertTag = document.createElement('div');
+          alertTag.innerText = `⚠️ MINDFULWALLET: Fake Ad Detected! Claims to be ${brand.name} but links to an unverified domain.`;
+          alertTag.style.cssText = "position:absolute; top:0; background:#d32f2f; color:white; font-weight:bold; padding:5px; font-size:11px; z-index:99;";
+          ad.prepend(alertTag);
+        }
+      });
+    }
+  });
+}
+
+// Run this scan loop as the user scrolls their social media feeds
+setInterval(differentiateAds, 2500);
+
 }

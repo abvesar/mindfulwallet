@@ -3,7 +3,7 @@
   "name": "MindfulWallet",
   "version": "1.0",
   "description": "Protects youth from online scams and gambling.",
-  "permissions": ["tabs", "storage"],
+  "permissions": ["tabs", "storage", "declarativeNetRequest"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"
