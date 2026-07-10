@@ -23,7 +23,8 @@ MindfulWallet is a Chrome extension designed to help users pause and reflect bef
 1. Open Chrome and go to `chrome://extensions`
 2. Enable **Developer mode**
 3. Click **Load unpacked**
-4. Select the project folder containing `manifest.json`
+4. Select the folder that directly contains `manifest.json` and the other extension files
+5. Do not select a parent folder or a subfolder that does not contain the manifest
 
 ## Beta Testing Notes
 
