@@ -25,6 +25,19 @@ function sendLiveTelemetry(eventTitle, eventDetails) {
   });
 }
 
+// Gracefully attempts to send scan/block events to an open dashboard monitoring page
+function broadcastLog(domainName, statusVerdict) {
+  try {
+    chrome.runtime.sendMessage({
+      action: "logScanEvent",
+      domain: domainName,
+      status: statusVerdict
+    });
+  } catch (err) {
+    // Suppress error if no receiver is active
+  }
+}
+
 function ensureDefaults() {
   chrome.storage.local.get(["settings", "activityLog", "gamblingCount", "scamCount", "lockExpiration", "onboardingCompleted"], (data) => {
     chrome.storage.local.set({
@@ -69,6 +82,9 @@ chrome.runtime.onStartup.addListener(() => {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message && message.type === "scanner-alert") {
     recordActivity("Scanner flagged a page", message.patterns.join(", "), "scam");
+    try {
+      broadcastLog(sender && sender.tab && sender.tab.url ? sender.tab.url : 'unknown', "Scam Blocked");
+    } catch (e) {}
     sendResponse({ ok: true });
     return true;
   }
@@ -121,9 +137,14 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     const isBlocked = blockList.some((keyword) => url.includes(keyword));
     if (isBlocked && !isWarningPage) {
       recordActivity("Blocked risky site", `${tab.url || url}`, "gambling");
+      try { broadcastLog(url, "Scam Blocked"); } catch(e) {}
       chrome.tabs.update(tabId, {
         url: chrome.runtime.getURL("warning.html")
       });
+    }
+
+    else {
+      try { broadcastLog(url, "Active Scanner Safe"); } catch(e) {}
     }
 
     if ((url.includes("login") || url.includes("signin") || url.includes("verify") || url.includes("auth")) && !isWarningPage) {
@@ -139,6 +160,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 function triggerFakeVerificationAlert(tabId, brandName) {
   console.warn(`🚨 WARNING: Fake ${brandName} window intercepted!`);
   recordActivity("Phishing attempt blocked", `${brandName} redirect triggered`, "scam");
+  try { broadcastLog(brandName, "Scam Blocked"); } catch(e) {}
   sendLiveTelemetry("Gambling/Scam URL Blocked", "User tried to visit a restricted domain.");
   chrome.tabs.update(tabId, {
     url: chrome.runtime.getURL("warning.html?reason=fake_auth&brand=" + encodeURIComponent(brandName))
