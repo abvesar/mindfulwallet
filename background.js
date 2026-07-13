@@ -35,10 +35,17 @@ async function sendRemoteTelemetry(domainName, statusVerdict) {
         status: statusVerdict,
         tester_id: testerId
       })
+    }).then(res => {
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+      return res;
     });
     console.log("☁️ Telemetry synced to cloud remotely.");
   } catch (error) {
     console.error("Cloud logging failed:", error);
+    console.error("Supabase URL:", SUPABASE_URL);
+    console.error("Response details:", error.message);
   }
 }
 
