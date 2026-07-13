@@ -1,3 +1,52 @@
+// Paste your exact Supabase credentials here
+const SUPABASE_URL = "https://gxwjmvprxgwwvlpovvgg.supabase.co";
+const SUPABASE_KEY = "sb_publishable_ajtJrr1P1-IiakfNzg8lJQ_-vQofzcE";
+
+// Helper function to uniquely identify a tester anonymously without tracking personal data
+function getOrCreateTesterId() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(['testerId'], (result) => {
+      if (result.testerId) {
+        resolve(result.testerId);
+      } else {
+        const newId = "Tester_" + Math.random().toString(36).substring(2, 9).toUpperCase();
+        chrome.storage.local.set({ testerId: newId }, () => resolve(newId));
+      }
+    });
+  });
+}
+
+// The master function that pushes extension telemetry to your cloud dashboard
+async function sendRemoteTelemetry(domainName, statusVerdict) {
+  try {
+    const testerId = await getOrCreateTesterId();
+    const endpoint = `${SUPABASE_URL}/rest/v1/extension_logs`;
+
+    await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal"
+      },
+      body: JSON.stringify({
+        domain: domainName,
+        status: statusVerdict,
+        tester_id: testerId
+      })
+    });
+    console.log("☁️ Telemetry synced to cloud remotely.");
+  } catch (error) {
+    console.error("Cloud logging failed:", error);
+  }
+}
+
+// Log a remote ping immediately when the extension is first loaded
+chrome.runtime.onInstalled.addListener(() => {
+  sendRemoteTelemetry("System Initialisation", "Extension Activated");
+});
+
 // Telemetry is enabled again, but it only sends when a real Discord webhook URL is available.
 const DEFAULT_DISCORD_WEBHOOK_URL = "https://discordapp.com/api/webhooks/1525030773223067698/bxu4FPVUbFOiA1r4CVhVMxKslWSICl1GyaGJOTeu3fWvmxfMdd3LR9_yNNB4zmfflC9M";
 const defaultSettings = {
