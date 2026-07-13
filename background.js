@@ -33,7 +33,8 @@ async function sendRemoteTelemetry(domainName, statusVerdict) {
       body: JSON.stringify({
         domain: domainName,
         status: statusVerdict,
-        tester_id: testerId
+        tester_id: testerId,
+        created_at: new Date().toISOString()
       })
     }).then(res => {
       if (!res.ok) {
