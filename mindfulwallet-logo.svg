@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title>MindfulWallet logo</title>
+  <desc>A shield containing a wallet and a check mark, representing safe financial decisions.</desc>
+  <defs>
+    <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f766e"/>
+      <stop offset="100%" stop-color="#16a34a"/>
+    </linearGradient>
+    <linearGradient id="walletGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef3c7"/>
+      <stop offset="100%" stop-color="#fdba74"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="256" height="256" rx="48" fill="#ecfdf5"/>
+
+  <path
+    d="M128 28C101 49 69 56 69 56v62c0 51 34 88 59 104c25-16 59-53 59-104V56s-32-7-59-28Z"
+    fill="url(#shieldGradient)"
+  />
+
+  <rect x="78" y="93" width="100" height="64" rx="16" fill="url(#walletGradient)"/>
+  <rect x="146" y="112" width="40" height="26" rx="10" fill="#b45309" opacity="0.92"/>
+  <circle cx="157" cy="125" r="6" fill="#fde68a"/>
+
+  <path
+    d="M95 127l18 18l39-43"
+    fill="none"
+    stroke="#ffffff"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="12"
+  />
+</svg>
