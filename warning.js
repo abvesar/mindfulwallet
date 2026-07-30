@@ -1,3 +1,53 @@
+const BROWSER = globalThis.browser || globalThis.chrome;
+
+function storageGet(keys) {
+  const storageArea = BROWSER?.storage?.local;
+  if (!storageArea) {
+    return Promise.resolve({});
+  }
+
+  const result = storageArea.get(keys);
+  if (result && typeof result.then === 'function') {
+    return result;
+  }
+
+  return new Promise((resolve) => {
+    storageArea.get(keys, resolve);
+  });
+}
+
+function storageSet(items) {
+  const storageArea = BROWSER?.storage?.local;
+  if (!storageArea) {
+    return Promise.resolve();
+  }
+
+  const result = storageArea.set(items);
+  if (result && typeof result.then === 'function') {
+    return result;
+  }
+
+  return new Promise((resolve) => {
+    storageArea.set(items, resolve);
+  });
+}
+
+function storageRemove(keys) {
+  const storageArea = BROWSER?.storage?.local;
+  if (!storageArea) {
+    return Promise.resolve();
+  }
+
+  const result = storageArea.remove(keys);
+  if (result && typeof result.then === 'function') {
+    return result;
+  }
+
+  return new Promise((resolve) => {
+    storageArea.remove(keys, resolve);
+  });
+}
+
 // Read the reason for the block from the URL parameters
 const urlParams = new URLSearchParams(window.location.search);
 const blockReason = urlParams.get('reason');
@@ -35,7 +85,7 @@ function updateClock(expirationTime) {
 
   if (timeLeft <= 0) {
     clearInterval(countdownInterval);
-    chrome.storage.local.remove('lockExpiration');
+    storageRemove('lockExpiration');
     bypassBtn.disabled = false;
     bypassBtn.style.opacity = '1';
     bypassBtn.innerText = 'Bypass (Start 24hr Lockout)';
@@ -57,21 +107,21 @@ safeBtn.addEventListener('click', () => {
   window.location.href = 'https://google.com';
 });
 
-chrome.storage.local.get(['lockExpiration'], (result) => {
+(async () => {
+  const result = await storageGet(['lockExpiration']);
   if (result.lockExpiration) {
     const now = Date.now();
     if (now < result.lockExpiration) {
       startCountdown(result.lockExpiration);
     } else {
-      chrome.storage.local.remove('lockExpiration');
+      storageRemove('lockExpiration');
     }
   }
-});
+})();
 
-bypassBtn.addEventListener('click', () => {
+bypassBtn.addEventListener('click', async () => {
   const twentyFourHours = 24 * 60 * 60 * 1000;
   const expirationTime = Date.now() + twentyFourHours;
-  chrome.storage.local.set({ lockExpiration: expirationTime }, () => {
-    startCountdown(expirationTime);
-  });
+  await storageSet({ lockExpiration: expirationTime });
+  startCountdown(expirationTime);
 });

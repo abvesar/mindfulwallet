@@ -1,6 +1,6 @@
 # MindfulWallet
 
-MindfulWallet is a Chrome extension designed to help users pause and reflect before falling into risky online decisions such as gambling, scam-style prompts, or high-pressure checkout tactics.
+MindfulWallet is a cross-browser extension designed to help users pause and reflect before falling into risky online decisions such as gambling, scam-style prompts, or high-pressure checkout tactics.
 
 ## Features
 

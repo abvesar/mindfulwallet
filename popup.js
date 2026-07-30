@@ -1,3 +1,37 @@
+const BROWSER = globalThis.browser || globalThis.chrome;
+
+function storageGet(keys) {
+  const storageArea = BROWSER?.storage?.local;
+  if (!storageArea) {
+    return Promise.resolve({});
+  }
+
+  const result = storageArea.get(keys);
+  if (result && typeof result.then === 'function') {
+    return result;
+  }
+
+  return new Promise((resolve) => {
+    storageArea.get(keys, resolve);
+  });
+}
+
+function storageSet(items) {
+  const storageArea = BROWSER?.storage?.local;
+  if (!storageArea) {
+    return Promise.resolve();
+  }
+
+  const result = storageArea.set(items);
+  if (result && typeof result.then === 'function') {
+    return result;
+  }
+
+  return new Promise((resolve) => {
+    storageArea.set(items, resolve);
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const statGambling = document.getElementById('statGambling');
   const statScams = document.getElementById('statScams');
@@ -10,47 +44,44 @@ document.addEventListener('DOMContentLoaded', () => {
   const toggleScanner = document.getElementById('toggleScanner');
   const toggleTelemetry = document.getElementById('toggleTelemetry');
 
-  function updatePopupStats() {
-    chrome.storage.local.get(['gamblingCount', 'scamCount', 'lockExpiration'], (data) => {
-      const gambling = data.gamblingCount || 0;
-      const scams = data.scamCount || 0;
-      const isLocked = data.lockExpiration && Date.now() < data.lockExpiration ? 1 : 0;
-      const moneySaved = (gambling * 500) + (scams * 1000);
+  async function updatePopupStats() {
+    const data = await storageGet(['gamblingCount', 'scamCount', 'lockExpiration']);
+    const gambling = data.gamblingCount || 0;
+    const scams = data.scamCount || 0;
+    const isLocked = data.lockExpiration && Date.now() < data.lockExpiration ? 1 : 0;
+    const moneySaved = (gambling * 500) + (scams * 1000);
 
-      statGambling.innerText = gambling;
-      statScams.innerText = scams;
-      statLocks.innerText = isLocked;
-      statSavings.innerText = `₹${moneySaved.toLocaleString()}`;
-    });
+    statGambling.innerText = gambling;
+    statScams.innerText = scams;
+    statLocks.innerText = isLocked;
+    statSavings.innerText = `₹${moneySaved.toLocaleString()}`;
   }
 
-  function renderActivityLog() {
-    chrome.storage.local.get(['activityLog'], (data) => {
-      const activities = Array.isArray(data.activityLog) ? data.activityLog : [];
-      if (!activities.length) {
-        activityList.innerHTML = '<li class="activity-item">No activity yet. Try visiting the demo shop or a risky page.</li>';
-        return;
-      }
+  async function renderActivityLog() {
+    const data = await storageGet(['activityLog']);
+    const activities = Array.isArray(data.activityLog) ? data.activityLog : [];
+    if (!activities.length) {
+      activityList.innerHTML = '<li class="activity-item">No activity yet. Try visiting the demo shop or a risky page.</li>';
+      return;
+    }
 
-      activityList.innerHTML = activities.slice(0, 5).map((item) => {
-        const time = new Date(item.time || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        return `<li class="activity-item"><strong>${item.title}</strong><br>${item.detail}<br><span class="small">${time}</span></li>`;
-      }).join('');
-    });
+    activityList.innerHTML = activities.slice(0, 5).map((item) => {
+      const time = new Date(item.time || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return `<li class="activity-item"><strong>${item.title}</strong><br>${item.detail}<br><span class="small">${time}</span></li>`;
+    }).join('');
   }
 
-  function loadSettings() {
-    chrome.storage.local.get(['settings', 'onboardingCompleted'], (data) => {
-      const settings = data.settings || {};
-      toggleBlock.checked = settings.blockSites !== false;
-      toggleScanner.checked = settings.scannerAlerts !== false;
-      toggleTelemetry.checked = settings.telemetryEnabled !== false;
-      onboardingCard.style.display = data.onboardingCompleted ? 'none' : 'block';
-    });
+  async function loadSettings() {
+    const data = await storageGet(['settings', 'onboardingCompleted']);
+    const settings = data.settings || {};
+    toggleBlock.checked = settings.blockSites !== false;
+    toggleScanner.checked = settings.scannerAlerts !== false;
+    toggleTelemetry.checked = settings.telemetryEnabled !== false;
+    onboardingCard.style.display = data.onboardingCompleted ? 'none' : 'block';
   }
 
-  function saveSettings() {
-    chrome.storage.local.set({
+  async function saveSettings() {
+    await storageSet({
       settings: {
         blockSites: toggleBlock.checked,
         scannerAlerts: toggleScanner.checked,
@@ -63,8 +94,8 @@ document.addEventListener('DOMContentLoaded', () => {
   toggleScanner.addEventListener('change', saveSettings);
   toggleTelemetry.addEventListener('change', saveSettings);
 
-  dismissOnboarding.addEventListener('click', () => {
-    chrome.storage.local.set({ onboardingCompleted: true });
+  dismissOnboarding.addEventListener('click', async () => {
+    await storageSet({ onboardingCompleted: true });
     onboardingCard.style.display = 'none';
   });
 

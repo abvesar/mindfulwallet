@@ -1,3 +1,21 @@
+const BROWSER = globalThis.browser || globalThis.chrome;
+
+function storageGet(keys) {
+  const storageArea = BROWSER?.storage?.local;
+  if (!storageArea) {
+    return Promise.resolve({});
+  }
+
+  const result = storageArea.get(keys);
+  if (result && typeof result.then === 'function') {
+    return result;
+  }
+
+  return new Promise((resolve) => {
+    storageArea.get(keys, resolve);
+  });
+}
+
 // Array of dark patterns / deceptive phrases used by scam sites
 const deceptivePatterns = [
   { pattern: /\bonly\s+\d+\s+left\b/i, type: "Fake Scarcity" },
@@ -24,27 +42,26 @@ function normalizeText(text) {
     .trim();
 }
 
-function runScanner() {
+async function runScanner() {
   if (!document.body) return;
 
-  chrome.storage.local.get(["settings"], (data) => {
-    const settings = data.settings || {};
-    if (settings.scannerAlerts === false) return;
+  const data = await storageGet(["settings"]);
+  const settings = data.settings || {};
+  if (settings.scannerAlerts === false) return;
 
-    const bodyText = normalizeText(document.body.innerText);
-    const detectedPatterns = deceptivePatterns.filter((pattern) => pattern.pattern.test(bodyText));
+  const bodyText = normalizeText(document.body.innerText);
+  const detectedPatterns = deceptivePatterns.filter((pattern) => pattern.pattern.test(bodyText));
 
-    const shouldAlert =
-      detectedPatterns.length >= 2 ||
-      detectedPatterns.some((pattern) => highConfidenceTypes.has(pattern.type));
+  const shouldAlert =
+    detectedPatterns.length >= 2 ||
+    detectedPatterns.some((pattern) => highConfidenceTypes.has(pattern.type));
 
-    if (shouldAlert) {
-      const uniquePatterns = [...new Set(detectedPatterns.map((pattern) => pattern.type))];
-      highlightTextOnPage(detectedPatterns);
-      injectSafetyBanner(uniquePatterns);
-      chrome.runtime.sendMessage({ type: "scanner-alert", patterns: uniquePatterns });
-    }
-  });
+  if (shouldAlert) {
+    const uniquePatterns = [...new Set(detectedPatterns.map((pattern) => pattern.type))];
+    highlightTextOnPage(detectedPatterns);
+    injectSafetyBanner(uniquePatterns);
+    BROWSER.runtime.sendMessage({ type: "scanner-alert", patterns: uniquePatterns });
+  }
 }
 
 function injectSafetyBanner(patternsFound) {
@@ -113,64 +130,51 @@ if (document.readyState === "loading") {
   window.addEventListener("load", runScanner, { once: true });
 } else {
   setTimeout(runScanner, 1500);
-  // Add this inside your scanner.js file
-function blindfoldSponsoredAds() {
-  // Look for elements commonly used by social networks for ads
-  const posts = document.querySelectorAll('div, article, section');
-  
-  posts.forEach(post => {
-    const text = post.innerText.toLowerCase();
-    // If a post contains gambling keywords or is an ad, blur it!
-    if (text.includes('sponsored') && (text.includes('bet') || text.includes('casino') || text.includes('crypto win'))) {
-      post.style.filter = 'blur(10px)';
-      post.style.pointerEvents = 'none'; // Make it unclickable
-      console.log("🛡️ MindfulWallet blurred a predatory social media ad!");
-    }
-  });
-}
+  function blindfoldSponsoredAds() {
+    const posts = document.querySelectorAll('div, article, section');
 
-// Run this scan every 3 seconds to catch infinite scrolling feeds
-setInterval(blindfoldSponsoredAds, 3000);
+    posts.forEach((post) => {
+      const text = post.innerText.toLowerCase();
+      if (text.includes('sponsored') && (text.includes('bet') || text.includes('casino') || text.includes('crypto win'))) {
+        post.style.filter = 'blur(10px)';
+        post.style.pointerEvents = 'none';
+        console.log("🛡️ MindfulWallet blurred a predatory social media ad!");
+      }
+    });
+  }
 
-// A verified registry of mega-brands that scammers frequently impersonate
-const globalBrandsRegistry = [
-  { name: "nike", officialDomain: "nike.com" },
-  { name: "adidas", officialDomain: "adidas.com" },
-  { name: "amazon", officialDomain: "amazon.com" },
-  { name: "apple", officialDomain: "apple.com" }
-];
+  setInterval(blindfoldSponsoredAds, 3000);
 
-function differentiateAds() {
-  // Find all sponsored or ad elements on the social feed
-  const adsOnPage = document.querySelectorAll('div[data-testid="placement-tracking"], iframe, .sponsored-ad-card');
+  const globalBrandsRegistry = [
+    { name: "nike", officialDomain: "nike.com" },
+    { name: "adidas", officialDomain: "adidas.com" },
+    { name: "amazon", officialDomain: "amazon.com" },
+    { name: "apple", officialDomain: "apple.com" }
+  ];
 
-  adsOnPage.forEach(ad => {
-    const adText = ad.innerText.toLowerCase();
-    const destinationLink = ad.querySelector('a')?.href.toLowerCase();
+  function differentiateAds() {
+    const adsOnPage = document.querySelectorAll('div[data-testid="placement-tracking"], iframe, .sponsored-ad-card');
 
-    if (destinationLink) {
-      globalBrandsRegistry.forEach(brand => {
-        // If the ad text mentions a major brand (e.g., "Nike sale!") 
-        // but the actual hyperlink goes somewhere else entirely...
-        if (adText.includes(brand.name) && !destinationLink.includes(brand.officialDomain)) {
-          
-          // 🚨 CONFIRMED FAKE AD: Apply the red flag styling!
-          ad.style.border = "4px solid #d32f2f";
-          ad.style.backgroundColor = "#ffebee";
-          ad.style.position = "relative";
+    adsOnPage.forEach((ad) => {
+      const adText = ad.innerText.toLowerCase();
+      const destinationLink = ad.querySelector('a')?.href.toLowerCase();
 
-          // Inject a label over the ad frame so the youth sees the trick
-          const alertTag = document.createElement('div');
-          alertTag.innerText = `⚠️ MINDFULWALLET: Fake Ad Detected! Claims to be ${brand.name} but links to an unverified domain.`;
-          alertTag.style.cssText = "position:absolute; top:0; background:#d32f2f; color:white; font-weight:bold; padding:5px; font-size:11px; z-index:99;";
-          ad.prepend(alertTag);
-        }
-      });
-    }
-  });
-}
+      if (destinationLink) {
+        globalBrandsRegistry.forEach((brand) => {
+          if (adText.includes(brand.name) && !destinationLink.includes(brand.officialDomain)) {
+            ad.style.border = "4px solid #d32f2f";
+            ad.style.backgroundColor = "#ffebee";
+            ad.style.position = "relative";
 
-// Run this scan loop as the user scrolls their social media feeds
-setInterval(differentiateAds, 2500);
+            const alertTag = document.createElement('div');
+            alertTag.innerText = `⚠️ MINDFULWALLET: Fake Ad Detected! Claims to be ${brand.name} but links to an unverified domain.`;
+            alertTag.style.cssText = "position:absolute; top:0; background:#d32f2f; color:white; font-weight:bold; padding:5px; font-size:11px; z-index:99;";
+            ad.prepend(alertTag);
+          }
+        });
+      }
+    });
+  }
 
+  setInterval(differentiateAds, 2500);
 }

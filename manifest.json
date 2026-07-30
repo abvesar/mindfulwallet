@@ -11,6 +11,12 @@
   },
   "permissions": ["tabs", "storage", "declarativeNetRequest"],
   "host_permissions": ["<all_urls>"],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "mindfulwallet@example.com",
+      "strict_min_version": "109.0"
+    }
+  },
   "background": {
     "service_worker": "background.js"
   },
