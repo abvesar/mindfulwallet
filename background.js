@@ -55,7 +55,6 @@ function storageRemove(keys) {
     storageArea.remove(keys, resolve);
   });
 }
-
 function getExtensionUrl(path) {
   return BROWSER?.runtime?.getURL ? BROWSER.runtime.getURL(path) : path;
 }
@@ -136,6 +135,7 @@ const DEFAULT_DISCORD_WEBHOOK_URL = "https://discordapp.com/api/webhooks/1525030
 const defaultSettings = {
   blockSites: true,
   scannerAlerts: true,
+  secureTransactions: true,
   telemetryEnabled: true
 };
 
@@ -222,6 +222,25 @@ BROWSER.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendResponse({ ok: true });
     return true;
   }
+
+  if (message && message.type === "transaction-risk") {
+    const riskDetails = Array.isArray(message.risks) ? message.risks.join(", ") : "Unknown transaction risk";
+    recordActivity("Transaction risk blocked", riskDetails, "scam");
+    try {
+      broadcastLog(sender && sender.tab && sender.tab.url ? sender.tab.url : "unknown", "Transaction Risk Blocked");
+    } catch (e) {}
+    sendResponse({ ok: true });
+    return true;
+  }
+
+  if (message && message.type === "transaction-safe") {
+    try {
+      broadcastLog(sender && sender.tab && sender.tab.url ? sender.tab.url : "unknown", "Secure Transaction Verified");
+    } catch (e) {}
+    sendResponse({ ok: true });
+    return true;
+  }
+
   return false;
 });
 

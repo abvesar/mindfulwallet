@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const dismissOnboarding = document.getElementById('dismissOnboarding');
   const toggleBlock = document.getElementById('toggleBlock');
   const toggleScanner = document.getElementById('toggleScanner');
+  const toggleSecureTransactions = document.getElementById('toggleSecureTransactions');
   const toggleTelemetry = document.getElementById('toggleTelemetry');
 
   async function updatePopupStats() {
@@ -76,6 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const settings = data.settings || {};
     toggleBlock.checked = settings.blockSites !== false;
     toggleScanner.checked = settings.scannerAlerts !== false;
+    toggleSecureTransactions.checked = settings.secureTransactions !== false;
     toggleTelemetry.checked = settings.telemetryEnabled !== false;
     onboardingCard.style.display = data.onboardingCompleted ? 'none' : 'block';
   }
@@ -85,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
       settings: {
         blockSites: toggleBlock.checked,
         scannerAlerts: toggleScanner.checked,
+        secureTransactions: toggleSecureTransactions.checked,
         telemetryEnabled: toggleTelemetry.checked
       }
     });
@@ -92,6 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   toggleBlock.addEventListener('change', saveSettings);
   toggleScanner.addEventListener('change', saveSettings);
+  toggleSecureTransactions.addEventListener('change', saveSettings);
   toggleTelemetry.addEventListener('change', saveSettings);
 
   dismissOnboarding.addEventListener('click', async () => {

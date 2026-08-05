@@ -25,6 +25,8 @@ const scamCount = document.getElementById('scamCount');
 let total = 0, traps = 0, scams = 0;
 
 function getBadgeClass(status) {
+  if (status.includes('Secure Transaction')) return 'badge-safe';
+  if (status.includes('Transaction Risk')) return 'badge-scam';
   if (status.includes('Scam')) return 'badge-scam';
   if (status.includes('Trap') || status.includes('Deceptive')) return 'badge-trap';
   return 'badge-safe';
@@ -64,6 +66,9 @@ async function bootstrapDashboard() {
     if (item.category === 'scam' && item.title.includes('Scanner flagged')) {
       status = 'Deceptive Trap';
       traps += 1;
+    } else if (item.title && item.title.includes('Transaction risk blocked')) {
+      status = 'Transaction Risk Blocked';
+      scams += 1;
     } else if (item.category === 'scam') {
       status = 'Scam Blocked';
       scams += 1;
@@ -91,8 +96,14 @@ BROWSER.storage.onChanged.addListener((changes, areaName) => {
 
 // Listen for scanning event messages sent out by background.js or scanner.js
 BROWSER.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === "logScanEvent" && message.status === "Active Scanner Safe") {
+  if (message.action === "logScanEvent") {
     total++;
+    if (message.status === 'Deceptive Trap') {
+      traps++;
+    }
+    if (message.status === 'Scam Blocked' || message.status === 'Transaction Risk Blocked') {
+      scams++;
+    }
     updateCounters();
     renderLogRow(message.domain, message.status, Date.now());
   }

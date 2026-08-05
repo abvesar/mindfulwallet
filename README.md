@@ -6,6 +6,8 @@ MindfulWallet is a cross-browser extension designed to help users pause and refl
 
 - Blocks risky gambling or scam-like URLs with a warning page
 - Detects manipulative website patterns such as urgency and fake scarcity
+- Adds a Secure Transaction Shield for banking, payment, and checkout pages
+- Pauses suspicious transaction submissions when insecure endpoints are detected
 - Shows a lockout countdown after a bypass attempt
 - Provides a branded popup with intervention statistics and safety controls
 - Includes a live monitoring dashboard for demo and inspection flows
