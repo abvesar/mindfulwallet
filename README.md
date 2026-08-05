@@ -8,10 +8,18 @@ MindfulWallet is a cross-browser extension designed to help users pause and refl
 - Detects manipulative website patterns such as urgency and fake scarcity
 - Adds a Secure Transaction Shield for banking, payment, and checkout pages
 - Pauses suspicious transaction submissions when insecure endpoints are detected
+- Keeps telemetry disabled by default and only sends anonymized events after explicit opt-in
 - Shows a lockout countdown after a bypass attempt
 - Provides a branded popup with intervention statistics and safety controls
 - Includes a live monitoring dashboard for demo and inspection flows
 - Ships with custom extension icons and a reusable logo asset
+
+## Privacy and Permissions
+
+- Content scripts run on web pages (`http` and `https`) to detect risky patterns and secure transaction risks.
+- Telemetry is optional and disabled by default.
+- Telemetry is only sent if a user explicitly enables it and configures their own webhook endpoint.
+- No install-time telemetry beacon is sent.
 
 ## Project Structure
 

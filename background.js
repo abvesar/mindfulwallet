@@ -125,18 +125,13 @@ async function sendRemoteTelemetry(domainName, statusVerdict) {
   }
 }
 
-// Log a remote ping immediately when the extension is first loaded
-BROWSER.runtime.onInstalled.addListener(() => {
-  sendRemoteTelemetry("System Initialisation", "Extension Activated");
-});
-
-// Telemetry is enabled again, but it only sends when a real Discord webhook URL is available.
-const DEFAULT_DISCORD_WEBHOOK_URL = "https://discordapp.com/api/webhooks/1525030773223067698/bxu4FPVUbFOiA1r4CVhVMxKslWSICl1GyaGJOTeu3fWvmxfMdd3LR9_yNNB4zmfflC9M";
+// Telemetry is opt-in and requires a user-provided webhook URL.
+const DEFAULT_DISCORD_WEBHOOK_URL = "";
 const defaultSettings = {
   blockSites: true,
   scannerAlerts: true,
   secureTransactions: true,
-  telemetryEnabled: true
+  telemetryEnabled: false
 };
 
 async function sendLiveTelemetry(eventTitle, eventDetails) {
@@ -144,7 +139,7 @@ async function sendLiveTelemetry(eventTitle, eventDetails) {
   const settings = result.settings || {};
   const webhookUrl = (result.discordWebhookUrl || DEFAULT_DISCORD_WEBHOOK_URL).trim();
 
-  if (settings.telemetryEnabled === false || !webhookUrl || webhookUrl.includes("your-webhook")) {
+  if (settings.telemetryEnabled !== true || !webhookUrl || webhookUrl.includes("your-webhook")) {
     return;
   }
 
@@ -206,7 +201,6 @@ async function recordActivity(title, detail, category) {
 
 BROWSER.runtime.onInstalled.addListener((details) => {
   ensureDefaults();
-  sendLiveTelemetry("New Installation!", `A tester successfully installed MindfulWallet (Reason: ${details.reason}).`);
 });
 
 BROWSER.runtime.onStartup.addListener(() => {
@@ -244,14 +238,21 @@ BROWSER.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return false;
 });
 
-const blockList = [
+const blockedDomains = [
   "randomgamblingsite.com",
   "sketchyscamsite.net",
-  "bet365",
-  "betfair",
-  "bovada",
-  "draftkings",
-  "fanduel",
+  "bet365.com",
+  "betfair.com",
+  "bovada.lv",
+  "draftkings.com",
+  "fanduel.com"
+];
+
+const riskyHostKeywordPattern = /(casino|poker|roulette|blackjack|slots|sportsbet|gambling|betting|scam|fraud)/i;
+const lureHostKeywordPattern = /(free-money|crypto-investment|fake-prize)/i;
+const highRiskTlds = new Set(["bet", "win", "top", "click", "cam", "xyz"]);
+const suspiciousHostTokens = new Set([
+  "bet",
   "casino",
   "poker",
   "roulette",
@@ -259,13 +260,85 @@ const blockList = [
   "slots",
   "sportsbet",
   "gambling",
-  "betting",
+  "crypto",
+  "airdrop",
+  "jackpot",
+  "prize",
+  "bonus",
+  "doublemoney",
   "scam",
-  "fraud",
-  "free-money",
-  "crypto-investment",
-  "fake-prize"
-];
+  "fraud"
+]);
+
+function normalizeHostname(hostname) {
+  return (hostname || "").toLowerCase().replace(/^www\./, "");
+}
+
+function matchesBlockedDomain(hostname) {
+  const normalizedHost = normalizeHostname(hostname);
+  return blockedDomains.some((domain) => normalizedHost === domain || normalizedHost.endsWith(`.${domain}`));
+}
+
+function matchesSuspiciousHostPattern(hostname) {
+  const normalizedHost = normalizeHostname(hostname);
+  return riskyHostKeywordPattern.test(normalizedHost) && lureHostKeywordPattern.test(normalizedHost);
+}
+
+function assessHostnameRisk(hostname) {
+  const normalizedHost = normalizeHostname(hostname);
+  const tld = normalizedHost.split(".").pop() || "";
+  const parts = normalizedHost.split(/[^a-z0-9]+/).filter(Boolean);
+  const tokenHits = parts.reduce((count, token) => count + (suspiciousHostTokens.has(token) ? 1 : 0), 0);
+
+  let score = 0;
+
+  if (normalizedHost.includes("xn--")) {
+    score += 3;
+  }
+
+  if (highRiskTlds.has(tld)) {
+    score += 2;
+  }
+
+  if ((normalizedHost.match(/-/g) || []).length >= 3) {
+    score += 1;
+  }
+
+  if (/\d{4,}/.test(normalizedHost)) {
+    score += 1;
+  }
+
+  if (riskyHostKeywordPattern.test(normalizedHost)) {
+    score += 1;
+  }
+
+  if (lureHostKeywordPattern.test(normalizedHost)) {
+    score += 2;
+  }
+
+  if (tokenHits >= 2) {
+    score += 3;
+  } else if (tokenHits === 1) {
+    score += 1;
+  }
+
+  return { score, tokenHits };
+}
+
+function shouldBlockUrl(targetUrl) {
+  try {
+    const parsed = new URL(targetUrl);
+    const hostname = parsed.hostname;
+    if (matchesBlockedDomain(hostname) || matchesSuspiciousHostPattern(hostname)) {
+      return true;
+    }
+
+    const risk = assessHostnameRisk(hostname);
+    return risk.score >= 6 || (risk.score >= 4 && risk.tokenHits >= 2);
+  } catch (error) {
+    return false;
+  }
+}
 
 const officialAuthDomains = {
   google: ["://google.com"],
@@ -286,7 +359,7 @@ BROWSER.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     return;
   }
 
-  const isBlocked = blockList.some((keyword) => url.includes(keyword));
+  const isBlocked = shouldBlockUrl(changeInfo.url);
   if (isBlocked && !isWarningPage) {
     recordActivity("Blocked risky site", `${tab.url || url}`, "gambling");
     try { broadcastLog(url, "Risky Site Blocked"); } catch (e) {}
