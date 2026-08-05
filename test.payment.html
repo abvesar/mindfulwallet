@@ -222,6 +222,7 @@
     </section>
   </div>
 
+  <script src="secure-pay.js"></script>
   <script>
     const modeDetails = {
       'unsafe-http': {
@@ -261,7 +262,15 @@
 
     form.addEventListener('submit', (event) => {
       event.preventDefault();
-      alert('Demo submit captured. If the shield is enabled, it should intercept risky submissions before this handler runs.');
+
+      // Let submit listeners (including the shield) run first, then show demo alert only when no shield modal is visible.
+      window.setTimeout(() => {
+        const shieldModal = document.getElementById('mindful-wallet-transaction-modal');
+        const shieldIsVisible = Boolean(shieldModal && getComputedStyle(shieldModal).display !== 'none');
+        if (!shieldIsVisible) {
+          alert('Demo submit captured. If the shield is enabled, it should intercept risky submissions before this handler runs.');
+        }
+      }, 0);
     });
   </script>
 </body>
