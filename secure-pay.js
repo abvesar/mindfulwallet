@@ -16,6 +16,21 @@ function storageGet(keys) {
   });
 }
 
+function safeSendRuntimeMessage(payload) {
+  try {
+    if (!BROWSER?.runtime?.sendMessage) {
+      return;
+    }
+
+    const maybePromise = BROWSER.runtime.sendMessage(payload);
+    if (maybePromise && typeof maybePromise.catch === 'function') {
+      maybePromise.catch(() => {});
+    }
+  } catch (error) {
+    // Ignore messaging failures outside extension contexts.
+  }
+}
+
 const TRANSACTION_PATH_HINTS = /(pay|payment|checkout|transfer|upi|bank|wallet|card|billing|transaction|signin|login|authorize)/i;
 const BANKING_HOST_HINTS = /(bank|wallet|pay|upi|finance|neobank|payments?)/i;
 const SENSITIVE_INPUT_SELECTOR = 'input[type="password"], input[name*="card" i], input[name*="cvv" i], input[name*="otp" i], input[name*="upi" i], input[autocomplete="cc-number"], input[autocomplete="one-time-code"]';
@@ -202,7 +217,7 @@ function injectSecureTransactionBadge() {
   document.body.appendChild(badge);
 }
 
-function guardSensitiveForms(risks) {
+function guardSensitiveForms() {
   const forms = Array.from(document.querySelectorAll('form')).filter((form) => form.querySelector(SENSITIVE_INPUT_SELECTOR));
 
   forms.forEach((form) => {
@@ -217,9 +232,14 @@ function guardSensitiveForms(risks) {
         return;
       }
 
+      const liveRisks = collectTransactionRisks();
+      if (liveRisks.length === 0) {
+        return;
+      }
+
       event.preventDefault();
       event.stopPropagation();
-      showTransactionModal(risks, form);
+      showTransactionModal(liveRisks, form);
     });
   });
 }
@@ -238,15 +258,15 @@ async function runTransactionShield() {
   const risks = collectTransactionRisks();
   if (risks.length > 0) {
     injectTransactionRiskBanner(risks);
-    guardSensitiveForms(risks);
-    BROWSER.runtime.sendMessage({ type: 'transaction-risk', risks });
+    guardSensitiveForms();
+    safeSendRuntimeMessage({ type: 'transaction-risk', risks });
     return;
   }
 
   injectSecureTransactionBadge();
   if (!window.sessionStorage.getItem('mindfulWalletTransactionSafeLogged')) {
     window.sessionStorage.setItem('mindfulWalletTransactionSafeLogged', 'true');
-    BROWSER.runtime.sendMessage({ type: 'transaction-safe' });
+    safeSendRuntimeMessage({ type: 'transaction-safe' });
   }
 }
 

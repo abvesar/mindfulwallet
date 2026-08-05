@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindfulWallet Payment Test Form</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --accent: #0d9488;
+      --accent-strong: #0f766e;
+      --warn: #b45309;
+      --danger: #b91c1c;
+      --border: #dbe4ee;
+      --shadow: 0 16px 34px rgba(14, 35, 65, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(13, 148, 136, 0.18), transparent 32%),
+        radial-gradient(circle at bottom left, rgba(29, 78, 216, 0.12), transparent 30%),
+        var(--bg);
+      min-height: 100vh;
+      padding: 28px 16px;
+    }
+
+    .shell {
+      max-width: 860px;
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--accent-strong);
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: -0.02em;
+    }
+
+    p { color: var(--muted); line-height: 1.55; }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .mode-btn {
+      border: 1px solid var(--border);
+      background: #f9fbff;
+      color: #1e3a8a;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .mode-btn.active {
+      border-color: #0ea5e9;
+      background: #ecfeff;
+      color: #075985;
+    }
+
+    .meta {
+      margin-top: 12px;
+      padding: 10px 12px;
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 10px;
+      font-size: 13px;
+      color: #334155;
+    }
+
+    .warn { color: var(--warn); }
+    .danger { color: var(--danger); }
+
+    form {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input, select {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 10px 11px;
+      font-size: 14px;
+      background: #ffffff;
+    }
+
+    .cta {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      box-shadow: 0 12px 24px rgba(15, 118, 110, 0.28);
+    }
+
+    .disclaimer {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 720px) {
+      .mode-grid, form {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="panel">
+      <span class="eyebrow">Local QA Surface</span>
+      <h1>Test Payment Form</h1>
+      <p>
+        Use this page to test the Secure Transaction Shield behavior in MindfulWallet.
+        Switch gateway mode to simulate risky and trusted payment flows.
+      </p>
+
+      <div class="mode-grid" role="group" aria-label="Gateway mode selector">
+        <button type="button" class="mode-btn active" data-mode="unsafe-http">Unsafe HTTP Gateway</button>
+        <button type="button" class="mode-btn" data-mode="untrusted-https">Untrusted HTTPS Gateway</button>
+        <button type="button" class="mode-btn" data-mode="trusted-https">Trusted HTTPS Gateway</button>
+      </div>
+
+      <div class="meta" id="modeInfo"></div>
+    </section>
+
+    <section class="panel">
+      <form id="paymentForm" method="post" action="http://fake-payments.example/process">
+        <div class="full">
+          <label for="fullName">Full Name</label>
+          <input id="fullName" name="full_name" type="text" autocomplete="name" placeholder="Aarav Sharma" required />
+        </div>
+
+        <div class="full">
+          <label for="cardNumber">Card Number</label>
+          <input id="cardNumber" name="card_number" type="text" inputmode="numeric" autocomplete="cc-number" placeholder="4111 1111 1111 1111" required />
+        </div>
+
+        <div>
+          <label for="expiry">Expiry</label>
+          <input id="expiry" name="expiry" type="text" autocomplete="cc-exp" placeholder="MM/YY" required />
+        </div>
+
+        <div>
+          <label for="cvv">CVV</label>
+          <input id="cvv" name="cvv" type="password" inputmode="numeric" maxlength="4" placeholder="123" required />
+        </div>
+
+        <div class="full">
+          <label for="upi">UPI ID (optional)</label>
+          <input id="upi" name="upi_id" type="text" placeholder="name@bank" />
+        </div>
+
+        <div class="full">
+          <label for="otp">OTP</label>
+          <input id="otp" name="otp" type="text" autocomplete="one-time-code" inputmode="numeric" placeholder="000000" required />
+        </div>
+
+        <div class="full">
+          <label for="amount">Amount</label>
+          <select id="amount" name="amount" required>
+            <option value="">Select amount</option>
+            <option value="499">INR 499</option>
+            <option value="1999">INR 1,999</option>
+            <option value="4999">INR 4,999</option>
+          </select>
+        </div>
+
+        <button class="cta full" type="submit">Pay Now</button>
+      </form>
+
+      <p class="disclaimer">
+        Demo only: this page is intentionally non-functional and never processes a real payment.
+      </p>
+    </section>
+  </div>
+
+  <script>
+    const modeDetails = {
+      'unsafe-http': {
+        action: 'http://fake-payments.example/process',
+        text: '<span class="danger"><strong>Unsafe HTTP Gateway</strong></span> - Form posts over plain HTTP and should be flagged.'
+      },
+      'untrusted-https': {
+        action: 'https://unknown-payments-example.com/process',
+        text: '<span class="warn"><strong>Untrusted HTTPS Gateway</strong></span> - HTTPS is used, but target domain is not trusted.'
+      },
+      'trusted-https': {
+        action: 'https://checkout.stripe.com/pay',
+        text: '<strong>Trusted HTTPS Gateway</strong> - Uses a trusted host from the allowlist.'
+      }
+    };
+
+    const form = document.getElementById('paymentForm');
+    const info = document.getElementById('modeInfo');
+    const modeButtons = Array.from(document.querySelectorAll('.mode-btn'));
+
+    function applyMode(mode) {
+      const details = modeDetails[mode];
+      if (!details) return;
+      form.setAttribute('action', details.action);
+      info.innerHTML = `${details.text}<br><strong>Current form action:</strong> ${details.action}`;
+
+      modeButtons.forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+      });
+    }
+
+    modeButtons.forEach((btn) => {
+      btn.addEventListener('click', () => applyMode(btn.dataset.mode));
+    });
+
+    applyMode('unsafe-http');
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      alert('Demo submit captured. If the shield is enabled, it should intercept risky submissions before this handler runs.');
+    });
+  </script>
+</body>
+</html>
